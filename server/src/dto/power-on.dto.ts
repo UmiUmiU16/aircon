@@ -5,6 +5,6 @@ export class PowerOnDto {
   minTemperature: number;
   maxTemperature: number;
   defaultTemperature: number;
-  feeRate: number;
+  feeRate: number[];
   maxCapacity: number;
 }

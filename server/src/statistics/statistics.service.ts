@@ -9,7 +9,7 @@ export class StatisticsService {
     return;
   }
 
-  getStatisticsByRange(period: 'day' | 'week' | 'month'): ReportDto {
+  getStatisticsByRange(period: 'day' | 'week' | 'month', startTime: Date, endTime: Date): ReportDto {
     return new ReportDto();
   }
 

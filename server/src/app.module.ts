@@ -11,6 +11,7 @@ import { SchedulerModule } from './scheduler/scheduler.module';
 import { CheckInModule } from './check-in/check-in.module';
 import { StatisticsModule } from './statistics/statistics.module';
 import configuration from './configuration';
+import { RoomStatusModule } from './room-status/room-status.module';
 
 @Module({
   imports: [
@@ -24,8 +25,9 @@ import configuration from './configuration';
     SchedulerModule,
     CheckInModule,
     StatisticsModule,
+    RoomStatusModule,
   ],
   controllers: [AppController, ApiController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

@@ -4,3 +4,4 @@ export { CheckInDto } from './check-in.dto';
 export { PowerOnDto } from './power-on.dto';
 export { ReportDto } from './report.dto';
 export { CreateUserDto } from './create-user.dto';
+export { DetailDto } from './detail.dto';

@@ -1,12 +1,6 @@
-import { WindMode, WindSpeed } from 'src/types';
-
-export enum Action {
-  ON = 'on',
-  OFF = 'off',
-}
+import { WindSpeed, Status } from '../types';
 
 export class ChangeWindDto {
-  readonly action: Action = Action.ON;
-  readonly mode: WindMode = WindMode.COOLING;
-  readonly speed: WindSpeed = WindSpeed.LOW;
+  action: Status = Status.ON;
+  speed: WindSpeed = WindSpeed.MEDIUM;
 }

@@ -16,8 +16,9 @@ import { Roles } from 'src/auth/roles.decorator';
 import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { CheckInDto, ChangeWindDto, PowerOnDto } from 'src/dto';
 import { CheckInService } from 'src/check-in/check-in.service';
+import { RoomStatusService } from 'src/room-status/room-status.service';
 import { SchedulerService } from 'src/scheduler/scheduler.service';
-import { Action } from 'src/dto/change-wind.dto';
+import { Status, WindSpeed } from 'src/types';
 import { StatisticsService } from 'src/statistics/statistics.service';
 
 @ApiBearerAuth()
@@ -27,8 +28,11 @@ export class ApiController {
   constructor(
     private schedulerService: SchedulerService,
     private checkInService: CheckInService,
+    private roomStatusService: RoomStatusService,
     private statisticsService: StatisticsService,
-  ) {}
+  ) { }
+
+  private powerOnConf: PowerOnDto;
 
   @Get('profile')
   @Roles('client', 'desk', 'manager', 'admin')
@@ -36,18 +40,46 @@ export class ApiController {
     return req.user;
   }
 
-  @ApiOperation({ description: '开关机，更改房间风速' })
+  @ApiOperation({ description: '开关机' })
+  @Put('room/:roomId/changeStatus')
+  @Roles('client')
+  changeStatus(
+    @Param('roomId') roomId: string,
+    @Param('status') status: string,
+  ) {
+    var newStatus;
+    if (status == "on") {
+      newStatus = Status.ON;
+      this.schedulerService.turnOn(this.powerOnConf, parseInt(roomId), WindSpeed.MEDIUM);
+    } else {
+      newStatus = Status.OFF;
+      this.schedulerService.turnOff(parseInt(roomId));
+    }
+    return this.roomStatusService.setStatusByRoomId(this.powerOnConf, parseInt(roomId), newStatus);
+  }
+
+  @ApiOperation({ description: '更改房间风速' })
   @Put('room/:roomId/wind')
   @Roles('client')
   changeWind(
     @Param('roomId') roomId: string,
     @Body() changeWind: ChangeWindDto,
   ) {
-    if (changeWind.action == Action.ON) {
-      this.schedulerService.changeWind(parseInt(roomId), changeWind.speed);
-    } else {
-      this.schedulerService.turnOff(parseInt(roomId));
+    if (changeWind.action == Status.ON) {
+      this.schedulerService.changeWind(this.powerOnConf, parseInt(roomId), changeWind.speed);
     }
+    return this.roomStatusService.setWindByRoomId(this.powerOnConf, parseInt(roomId), changeWind);
+  }
+
+  @ApiOperation({ description: '更改房间目标温度' })
+  @Put('room/:roomId/temp')
+  @Roles('client')
+  changeTemp(
+    @Param('roomId') roomId: string,
+    @Param('targetTemp') targetTemp: string,
+  ) {
+    return this.roomStatusService.setTargetTempByRoomId(this.powerOnConf,
+      parseInt(roomId), parseInt(targetTemp));
   }
 
   @ApiOperation({ description: '查看房间空调状态' })
@@ -117,14 +149,15 @@ export class ApiController {
   @Post('poweron')
   @Roles('admin')
   powerOn(@Body() powerOn: PowerOnDto) {
+    this.powerOnConf = powerOn;
     return powerOn;
   }
 
   @ApiOperation({ description: '管理员查看房间状态' })
   @Get('status')
   @Roles('admin')
-  getRoomStatus() {
-    return;
+  async getRoomStatus() {
+    return this.roomStatusService.getRoomStatus();
   }
 
   @ApiOperation({ description: '管理员关闭主控机' })
